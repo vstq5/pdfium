@@ -14,6 +14,6 @@ export async function convertBitmapToImage(
   return data;
 }
 
-export function readUInt16LE(buffer: Uint8Array, offset = 0): number {
-  return buffer[offset] | (buffer[offset + 1] << 8);
+export function readUInt32LE(buffer: Uint8Array, offset = 0): number {
+  return (buffer[offset] | (buffer[offset + 1] << 8) | (buffer[offset + 2] << 16) | (buffer[offset + 3] << 24)) >>> 0;
 }

@@ -5,7 +5,7 @@ import type {
   PDFiumImageObjectRenderParams,
   PDFiumObjectType,
 } from "./objects.types.js";
-import { convertBitmapToImage, readUInt16LE } from "./utils.js";
+import { convertBitmapToImage, readUInt32LE } from "./utils.js";
 import type * as t from "./vendor/pdfium.js";
 
 type PDFiumObjectOptions = {
@@ -121,22 +121,20 @@ export class PDFiumImageObject extends PDFiumObjectBase {
     const oData = this.module.HEAPU8.slice(bufferPtr, bufferPtr + bufferSize);
     this.module.wasmExports.free(bufferPtr);
 
-    // Width and height of the image in pixels will be written to these pointers as 16-bit integers (2 bytes each):
-    // [ ... width (2 bytes) ... | ... height (2 bytes) ... ]
-    const sizePtr = this.module.wasmExports.malloc(2 + 2);
+    const sizePtr = this.module.wasmExports.malloc(4 + 4);
     const widthPtr = sizePtr;
-    const heightPtr = sizePtr + 2;
+    const heightPtr = sizePtr + 4;
 
     if (!this.module._FPDFImageObj_GetImagePixelSize(this.objectIdx, widthPtr, heightPtr)) {
       throw new Error("Failed to get image size.");
     }
 
-    const widthBuffer = this.module.HEAPU8.slice(widthPtr, widthPtr + 2);
-    const heightBuffer = this.module.HEAPU8.slice(heightPtr, heightPtr + 2);
+    const widthBuffer = this.module.HEAPU8.slice(widthPtr, widthPtr + 4);
+    const heightBuffer = this.module.HEAPU8.slice(heightPtr, heightPtr + 4);
     this.module.wasmExports.free(sizePtr);
 
-    const width = readUInt16LE(widthBuffer);
-    const height = readUInt16LE(heightBuffer);
+    const width = readUInt32LE(widthBuffer);
+    const height = readUInt32LE(heightBuffer);
 
     const filtersCount = this.module._FPDFImageObj_GetImageFilterCount(this.objectIdx);
     const filters: string[] = [];
