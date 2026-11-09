@@ -488,6 +488,24 @@ describe("PDFium", () => {
       });
     });
 
+    test("get page object image raw data wider than 65535 pixels", async () => {
+      await loadDocument("test_10_wide_image.pdf", async (document) => {
+        const result = [];
+        for (const object of document.getPage(0).objects()) {
+          if (object.type === "image") {
+            const image = await object.getImageDataRaw();
+            result.push({
+              size: image.data.length,
+              width: image.width,
+              height: image.height,
+              filters: image.filters,
+            });
+          }
+        }
+        expect(result).toEqual([{ size: 91, width: 70000, height: 1, filters: ["FlateDecode"] }]);
+      });
+    });
+
     test("raw data of a DCTDecode image is the JPEG file", async () => {
       await loadDocument("test_4_with_images.pdf", async (document) => {
         const jpegs = [];
