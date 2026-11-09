@@ -110,6 +110,12 @@ describe("PDFium", () => {
         doc2?.destroy();
       }
     });
+
+    test("should throw when memory for the document cannot be allocated", async () => {
+      await expect(library.loadDocument(new Uint8Array(2 ** 31))).rejects.toThrow(
+        "Failed to allocate memory for document",
+      );
+    });
   });
 
   describe("PDFiumPage", () => {
