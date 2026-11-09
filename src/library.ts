@@ -111,6 +111,9 @@ export class PDFiumLibrary {
     // module through wasmExports. The returned pointer (ptr) is an integer value representing the memory
     // location within the WebAssembly module's memory space.
     const documentPtr = this.module.wasmExports.malloc(size);
+    if (documentPtr === 0) {
+      throw new Error("Failed to allocate memory for document");
+    }
 
     // This line copies the content of buff into the WebAssembly module's memory starting at the address specified by ptr.
     // Here HEAPU8 is a typed array that serves as a view into the WebAssembly memory, allowing JavaScript code to read
